@@ -7,23 +7,42 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "format:fix": "prettier --cache --write .",
+    "format:check": "prettier --cache --check .",
+    "stylelint:fix": "stylelint --cache --fix **/*.css --ignore-path .gitignore",
+    "stylelint:check": "stylelint --cache **/*.css --ignore-path .gitignore",
+    "eslint:fix": "eslint --cache --fix .",
+    "eslint:check": "eslint --cache .",
+    "markuplint:fix": "markuplint --fix .",
+    "markuplint:check": "markuplint .",
+    "fix": "npm run format:fix && npm run stylelint:fix && npm run eslint:fix && npm run markuplint:fix",
+    "check": "npm run format:check && npm run stylelint:check && npm run eslint:check && npm run markuplint:check"
   },
   "dependencies": {
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "@eslint/js": "^9.21.0",
+    "@eslint/js": "^9.22.0",
+    "@markuplint/jsx-parser": "^4.7.18",
+    "@markuplint/react-spec": "^4.5.18",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
     "@vitejs/plugin-react-swc": "^3.8.0",
-    "eslint": "^9.21.0",
+    "eslint": "^9.22.0",
+    "eslint-plugin-react": "^7.37.4",
     "eslint-plugin-react-hooks": "^5.1.0",
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^15.15.0",
+    "markuplint": "^4.11.8",
+    "prettier": "^3.5.3",
+    "stylelint": "^16.15.0",
+    "stylelint-config-recess-order": "^6.0.0",
+    "stylelint-config-standard": "^37.0.0",
+    "stylelint-declaration-block-no-ignored-properties": "^2.8.0",
     "typescript": "~5.7.2",
-    "typescript-eslint": "^8.24.1",
+    "typescript-eslint": "^8.26.1",
     "vite": "^6.2.0"
   }
 }
