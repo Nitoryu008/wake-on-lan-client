@@ -1,0 +1,17 @@
+.indicator {
+  --size: 0.6rem;
+
+  position: absolute;
+  top: calc(50% - var(--size) / 2);
+  left: 0;
+  display: inline-block;
+  flex-shrink: 1;
+  width: var(--size);
+  height: var(--size);
+  background-color: gray;
+  border-radius: 100%;
+
+  &.active {
+    background-color: green;
+  }
+}

@@ -1,11 +1,14 @@
 {
-  "specs": {
-    "\\.[jt]sx?$": "@markuplint/react-spec"
-  },
+  "excludeFiles": [
+    "./node_modules/**/*"
+  ],
   "parser": {
-    "\\.[jt]sx?$": "@markuplint/jsx-parser"
+    ".tsx$": "@markuplint/jsx-parser"
+  },
+  "specs": {
+    ".tsx$": "@markuplint/react-spec"
   },
   "extends": [
-    "markuplint:recommended-react"
+    "markuplint:recommended"
   ]
 }

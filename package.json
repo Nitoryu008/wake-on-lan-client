@@ -14,12 +14,13 @@
     "stylelint:check": "stylelint --cache **/*.css --ignore-path .gitignore",
     "eslint:fix": "eslint --cache --fix .",
     "eslint:check": "eslint --cache .",
-    "markuplint:fix": "markuplint --fix .",
-    "markuplint:check": "markuplint .",
+    "markuplint:fix": "markuplint --fix **/*.{jsx,tsx}",
+    "markuplint:check": "markuplint **/*.{jsx,tsx}",
     "fix": "npm run format:fix && npm run stylelint:fix && npm run eslint:fix && npm run markuplint:fix",
     "check": "npm run format:check && npm run stylelint:check && npm run eslint:check && npm run markuplint:check"
   },
   "dependencies": {
+    "mqtt": "^5.10.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
