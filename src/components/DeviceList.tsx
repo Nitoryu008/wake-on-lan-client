@@ -2,15 +2,32 @@ import mqtt, { IClientOptions, MqttClient } from "mqtt";
 import { QoS } from "mqtt-packet";
 import { useEffect, useState } from "react";
 import styles from "./DeviceList.module.css";
-import { Indicator } from "./Indicator";
+import axios, { AxiosResponse } from "axios";
+import { DeviceItem } from "./DeviceItem";
 
-const deviceNames = import.meta.env.VITE_DEVICE_NAMES?.split(",");
+type APIResponse = {
+  DeviceName: string;
+  MacAddress: string;
+};
+
+type Device = {
+  name: string;
+  macAddress: string;
+  isActive: boolean;
+  setIsActive: React.Dispatch<React.SetStateAction<boolean>>;
+};
+
+export type MqttContext = {
+  topic: string;
+  qos: QoS;
+  payload: string | Buffer;
+};
 
 const mqttOptions = {
   keepalive: 60,
   clientId: "emqx_react_" + Math.random().toString(16).substring(2, 8),
   protocolId: "MQTT",
-  protocolVersion: 4,
+  protocolVersion: 5,
   clean: true,
   connectTimeout: 30 * 1000,
   will: {
@@ -31,17 +48,14 @@ export type Subscription = {
 export const DeviceList = () => {
   const [client, setClient] = useState<MqttClient | null>(null);
   const [connectStatus, setConnectStatus] = useState("Connecting...");
+  const [devices, setDevices] = useState<Device[] | null>(null);
 
   const mqttConnect = (options: IClientOptions) => {
     setClient(mqtt.connect(import.meta.env.VITE_MQTT_BROKER_URL, options));
     console.log("Client created");
   };
 
-  const mqttPublish = (context: {
-    topic: string;
-    qos: QoS;
-    payload: string | Buffer;
-  }) => {
+  const mqttPublish = (context: MqttContext) => {
     if (client) {
       const { topic, qos, payload } = context;
       client.publish(topic, payload, { qos }, (error) => {
@@ -66,9 +80,26 @@ export const DeviceList = () => {
     }
   };
 
-  useEffect(() => {
+  if (!client || client.disconnected) {
     mqttConnect(mqttOptions);
-  }, []);
+    axios
+      .get(import.meta.env.VITE_DB_API_URL, {
+        headers: { "x-api-key": import.meta.env.VITE_DB_API_KEY },
+      })
+      .then((response: AxiosResponse<Array<APIResponse>>) => {
+        console.log(response.data);
+
+        setDevices(
+          response.data.map((device) => {
+            return {
+              name: device.DeviceName,
+              macAddress: device.MacAddress,
+            } as Device;
+          })
+        );
+      })
+      .catch((error) => console.error("Error fetching data: ", error));
+  }
 
   useEffect(() => {
     if (client) {
@@ -76,50 +107,53 @@ export const DeviceList = () => {
       client.on("connect", () => {
         setConnectStatus("Connected");
       });
-      client.on("error", (error) => {
-        console.error("Connection error: ", error);
+      client.on("error", (err) => {
+        console.error("Connection error: ", err);
         client.end();
       });
       client.on("reconnect", () => {
-        setConnectStatus("Reconnecting...");
+        setConnectStatus("Reconnecting");
       });
-
-      mqttSubscribe({ topic: ["active", "inactive"], qos: 1 });
+      client.on("disconnect", (packet) => {
+        console.log("Disconnected: ", packet);
+      });
     }
   }, [client]);
+
+  useEffect(() => {
+    const topics = devices?.flatMap((device) => {
+      return `/${device.name}/state`;
+    });
+
+    if (topics) mqttSubscribe({ topic: topics, qos: 1 });
+  }, [devices]);
 
   return (
     <>
       <p className={styles.log}>MQTT Status: {connectStatus}</p>
-      <table className={styles.table}>
-        <thead>
-          <tr>
-            <th>DEVICE</th>
-            <th>STATUS</th>
-            <th>BUTTON</th>
-          </tr>
-        </thead>
-        <tbody>
-          {deviceNames.map((name) => (
-            <tr key={name}>
-              <td className={styles.name}>{name}</td>
-              <td className={styles.status}>
-                <Indicator client={client} name={name}></Indicator>
-              </td>
-              <td>
-                <button
-                  className={styles.button}
-                  onClick={() =>
-                    mqttPublish({ topic: "wakeup", qos: 1, payload: name })
-                  }
-                >
-                  Boot
-                </button>
-              </td>
+      {devices ? (
+        <table className={styles.table}>
+          <thead>
+            <tr>
+              <th>DEVICE</th>
+              <th>STATUS</th>
+              <th>BUTTON</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {devices.map(({ name, macAddress }) => (
+              <DeviceItem
+                name={name}
+                mqttPublish={mqttPublish}
+                client={client}
+                key={macAddress}
+              ></DeviceItem>
+            ))}
+          </tbody>
+        </table>
+      ) : (
+        "Failed to get device data"
+      )}
     </>
   );
 };

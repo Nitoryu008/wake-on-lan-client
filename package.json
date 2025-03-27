@@ -20,6 +20,7 @@
     "check": "npm run format:check && npm run stylelint:check && npm run eslint:check && npm run markuplint:check"
   },
   "dependencies": {
+    "axios": "^1.8.4",
     "mqtt": "^5.10.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
