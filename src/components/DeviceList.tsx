@@ -8,11 +8,13 @@ import { DeviceItem } from "./DeviceItem";
 type APIResponse = {
   DeviceName: string;
   MacAddress: string;
+  IPAddress: string;
 };
 
 type Device = {
   name: string;
   macAddress: string;
+  ipAddress: string;
   isActive: boolean;
   setIsActive: React.Dispatch<React.SetStateAction<boolean>>;
 };
@@ -94,6 +96,7 @@ export const DeviceList = () => {
             return {
               name: device.DeviceName,
               macAddress: device.MacAddress,
+              ipAddress: device.IPAddress,
             } as Device;
           })
         );
